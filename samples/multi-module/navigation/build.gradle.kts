@@ -14,6 +14,5 @@ android {
 dependencies {
     implementation(projects.voyagerCore)
 
-    implementation(libs.compose.compiler)
     implementation(libs.compose.runtime)
 }

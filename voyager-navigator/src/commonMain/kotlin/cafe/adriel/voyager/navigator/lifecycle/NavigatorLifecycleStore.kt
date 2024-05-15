@@ -11,6 +11,7 @@ public object NavigatorLifecycleStore {
 
     private val owners = ThreadSafeMap<NavigatorKey, ThreadSafeMap<KType, NavigatorDisposable>>()
 
+//    val stable:Int = 0
     /**
      * Register a NavigatorDisposable that will be called `onDispose` on the
      * [navigator] leaves the Composition.

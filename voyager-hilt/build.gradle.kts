@@ -2,7 +2,6 @@ plugins {
     id("com.android.library")
     kotlin("android")
     kotlin("kapt")
-    id("com.vanniktech.maven.publish")
 }
 
 setupModuleForAndroidxCompose()
@@ -18,9 +17,24 @@ kapt {
     correctErrorTypes = true
 }
 
+kotlin {
+    @Suppress("OPT_IN_USAGE")
+    compilerOptions {
+        freeCompilerArgs = listOf(
+            "-Xexpect-actual-classes", // remove warnings for expect classes
+            "-Xskip-prerelease-check",
+            "-opt-in=kotlinx.cinterop.ExperimentalForeignApi",
+        )
+    }
+    jvmToolchain {
+        languageVersion.set(JavaLanguageVersion.of(libs.versions.jvmTarget.get()))
+    }
+}
 dependencies {
-    api(projects.voyagerScreenmodel)
-    api(projects.voyagerNavigator)
+    api(detectProject(rootProject, ":voyager-screenmodel"))
+    api(detectProject(rootProject, ":voyager-navigator"))
+//    api(projects.voyagerScreenmodel)
+//    api(projects.voyagerNavigator)
 
     implementation(libs.compose.runtime)
     implementation(libs.compose.ui)

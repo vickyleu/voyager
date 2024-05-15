@@ -4,11 +4,13 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat.Msi
 import org.jetbrains.compose.desktop.application.tasks.AbstractNativeMacApplicationPackageTask
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
+import java.util.Locale
 
 plugins {
     kotlin("multiplatform")
     id("com.android.application")
     id("org.jetbrains.compose")
+    id("org.jetbrains.kotlin.plugin.compose")
 }
 
 kotlin {
@@ -72,12 +74,12 @@ kotlin {
 
             implementation(projects.voyagerCore)
             implementation(projects.voyagerNavigator)
-            implementation(libs.coroutines.core)
+            implementation(libs.kotlinx.coroutines.core)
         }
 
         androidMain.dependencies {
             implementation(libs.appCompat)
-            implementation(libs.compose.activity)
+            implementation(libs.androidx.activity.compose)
         }
 
         val desktopMain by getting {
@@ -117,7 +119,12 @@ compose.desktop.nativeApplication {
 afterEvaluate {
     val baseTask = "createDistributableNative"
     listOf("debug", "release").forEach {
-        val createAppTaskName = baseTask + it.capitalize() + "macosX64".capitalize()
+        val createAppTaskName =
+            baseTask + it.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() } + "macosX64".replaceFirstChar {
+                if (it.isLowerCase()) it.titlecase(
+                    Locale.getDefault()
+                ) else it.toString()
+            }
 
         val createAppTask = tasks.findByName(createAppTaskName) as? AbstractNativeMacApplicationPackageTask?
             ?: return@forEach
@@ -125,7 +132,7 @@ afterEvaluate {
         val destinationDir = createAppTask.destinationDir.get().asFile
         val packageName = createAppTask.packageName.get()
 
-        tasks.create("runNative" + it.capitalize()) {
+        tasks.create("runNative" + it.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }) {
             group = createAppTask.group
             dependsOn(createAppTaskName)
             doLast {
@@ -135,6 +142,4 @@ afterEvaluate {
     }
 }
 
-compose.experimental {
-    web.application {}
-}
+

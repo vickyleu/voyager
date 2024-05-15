@@ -77,7 +77,10 @@ public object ScreenModelStore : ScreenDisposable {
         val key = getDependencyKey(screenModel, name)
 
         return dependencies
-            .getOrPut(key) { (factory(key) to onDispose) as Dependency }
+            .getOrPut(key) {
+                @Suppress("UNCHECKED_CAST")
+                (factory(key) to onDispose) as Dependency
+            }
             .first as T
     }
 

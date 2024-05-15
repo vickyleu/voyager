@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package cafe.adriel.voyager.navigator.bottomSheet
 
 import androidx.compose.animation.core.AnimationSpec
