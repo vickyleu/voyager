@@ -1,7 +1,9 @@
+import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
+import java.util.Properties
+
 plugins {
     id("com.android.library")
     kotlin("android")
-    id("com.vanniktech.maven.publish")
 }
 
 setupModuleForAndroidxCompose()
@@ -13,10 +15,22 @@ android {
     }
 }
 
+kotlin {
+    @Suppress("OPT_IN_USAGE")
+    compilerOptions {
+        freeCompilerArgs = listOf(
+            "-Xexpect-actual-classes", // remove warnings for expect classes
+            "-Xskip-prerelease-check",
+            "-opt-in=kotlinx.cinterop.ExperimentalForeignApi",
+        )
+    }
+    jvmToolchain {
+        languageVersion.set(JavaLanguageVersion.of(libs.versions.jvmTarget.get()))
+    }
+}
 dependencies {
-    api(projects.voyagerCore)
-    api(projects.voyagerScreenmodel)
-
+    api(detectProject(rootProject,":voyager-core"))
+    api(detectProject(rootProject,":voyager-screenmodel"))
     implementation(libs.compose.runtimeLiveData)
 
     testRuntimeOnly(libs.junit.engine)

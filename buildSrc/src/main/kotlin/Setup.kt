@@ -1,21 +1,31 @@
+@file:OptIn(
+    ExperimentalKotlinGradlePluginApi::class, ExperimentalKotlinGradlePluginApi::class,
+    ExperimentalKotlinGradlePluginApi::class
+)
+@file:Suppress("UnstableApiUsage", "DEPRECATION")
+
 import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.LibraryExtension
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
+import org.gradle.api.artifacts.ProjectDependency
 import org.gradle.api.artifacts.VersionCatalogsExtension
+import org.gradle.api.artifacts.dsl.DependencyHandler
 import org.gradle.api.plugins.ExtensionAware
+import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.configure
-import org.gradle.kotlin.dsl.creating
 import org.gradle.kotlin.dsl.findByType
 import org.gradle.kotlin.dsl.get
-import org.gradle.kotlin.dsl.getValue
-import org.gradle.kotlin.dsl.getting
-import org.gradle.kotlin.dsl.invoke
-import org.gradle.kotlin.dsl.withType
 import org.gradle.kotlin.dsl.getByType
-import org.gradle.kotlin.dsl.hasPlugin
+import org.gradle.kotlin.dsl.invoke
+import org.gradle.kotlin.dsl.project
+import org.gradle.kotlin.dsl.withType
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmOptions
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+import org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinAndroidTarget
 import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -25,10 +35,33 @@ private fun BaseExtension.setupAndroid() {
     defaultConfig {
         minSdk = 21
         targetSdk = 34
-
         versionCode = 1
         versionName = "1.0"
     }
+    if (this is LibraryExtension) {
+        publishing {
+            singleVariant("release") {
+                withSourcesJar()
+                withJavadocJar()
+            }
+        }
+    }
+
+}
+
+
+fun DependencyHandler.detectProject(rootProject: Project, path: String): ProjectDependency {
+    if (rootProject.name != "voyager") {
+        return project(":voyager$path")
+    }
+    return project("$path")
+}
+
+fun KotlinDependencyHandler.detectProject(rootProject: Project, path: String): ProjectDependency {
+    if (rootProject.name != "voyager") {
+        return project(":voyager$path")
+    }
+    return project("$path")
 }
 
 fun Project.setupModuleForAndroidxCompose(
@@ -39,8 +72,8 @@ fun Project.setupModuleForAndroidxCompose(
         ?: error("Could not found Android application or library plugin applied on module $name")
 
     val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
-    val composeCompilerVersion = libs.findVersion("composeCompiler").get().requiredVersion
 
+    apply(plugin = "org.jetbrains.kotlin.plugin.compose")
     androidExtension.apply {
         setupAndroid()
 
@@ -48,13 +81,11 @@ fun Project.setupModuleForAndroidxCompose(
             compose = true
         }
 
-        composeOptions {
-            kotlinCompilerExtensionVersion = composeCompilerVersion
-        }
+
 
         compileOptions {
-            sourceCompatibility = JavaVersion.VERSION_1_8
-            targetCompatibility = JavaVersion.VERSION_1_8
+            sourceCompatibility = JavaVersion.toVersion(libs.findVersion("jvmTarget").get().requiredVersion)
+            targetCompatibility = JavaVersion.toVersion(libs.findVersion("jvmTarget").get().requiredVersion)
         }
 
         testOptions {
@@ -62,11 +93,12 @@ fun Project.setupModuleForAndroidxCompose(
                 it.useJUnitPlatform()
             }
         }
-
+        @Suppress("DEPRECATION")
         (this as ExtensionAware).extensions.configure<KotlinJvmOptions> {
-            configureKotlinJvmOptions(withKotlinExplicitMode)
+            configureKotlinJvmOptions(withKotlinExplicitMode, libs.findVersion("jvmTarget").get().requiredVersion)
         }
     }
+
 }
 
 fun Project.setupModuleForComposeMultiplatform(
@@ -75,6 +107,13 @@ fun Project.setupModuleForComposeMultiplatform(
     enableWasm: Boolean = true,
 ) {
     plugins.withType<org.jetbrains.kotlin.gradle.plugin.KotlinBasePluginWrapper> {
+        val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
+
+        findAndroidExtension().apply {
+            setupAndroid()
+            sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
+        }
+
         extensions.configure<KotlinMultiplatformExtension> {
             if (withKotlinExplicitMode) {
                 explicitApi()
@@ -85,13 +124,16 @@ fun Project.setupModuleForComposeMultiplatform(
                     languageSettings.optIn("cafe.adriel.voyager.core.annotation.ExperimentalVoyagerApi")
                 }
             }
-
+            sourceSets.commonMain.dependencies {
+                implementation(project.dependencies.platform(libs.findLibrary("compose.bom").get()))
+                implementation(project.dependencies.platform(libs.findLibrary("koin.bom").get()))
+            }
             applyDefaultHierarchyTemplate {
                 common {
-                    if(fullyMultiplatform) {
+                    if (fullyMultiplatform) {
                         group("commonWeb") {
                             withJs()
-                            if(enableWasm) {
+                            if (enableWasm) {
                                 withWasm()
                             }
                         }
@@ -105,9 +147,8 @@ fun Project.setupModuleForComposeMultiplatform(
             }
 
             androidTarget {
-                if (plugins.hasPlugin("com.vanniktech.maven.publish")) {
-                    publishLibraryVariants("release")
-                }
+                // no need to configure android target, it will be automatically configured by setupAndroid()
+//                publishLibraryVariants("release")
             }
             jvm("desktop")
 
@@ -127,25 +168,44 @@ fun Project.setupModuleForComposeMultiplatform(
             }
         }
 
-        findAndroidExtension().apply {
-            setupAndroid()
-            sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
-        }
+
 
         tasks.withType<KotlinCompile> {
-            kotlinOptions.configureKotlinJvmOptions(withKotlinExplicitMode)
+            compilerOptions.configureKotlinJvmOptions(
+                withKotlinExplicitMode,
+                libs.findVersion("jvmTarget").get().requiredVersion
+            )
         }
+
     }
 }
 
 private fun KotlinJvmOptions.configureKotlinJvmOptions(
-    enableExplicitMode: Boolean
+    enableExplicitMode: Boolean,
+    jvmVersion: String
 ) {
-    jvmTarget = JavaVersion.VERSION_1_8.toString()
+    jvmTarget = jvmVersion
+    if (enableExplicitMode) freeCompilerArgs += ("-Xexplicit-api=strict")
+    freeCompilerArgs += (
+            listOf(
+                "-opt-in=cafe.adriel.voyager.core.annotation.InternalVoyagerApi",
+                "-opt-in=cafe.adriel.voyager.core.annotation.ExperimentalVoyagerApi"
+            )
+            )
+}
 
-    if (enableExplicitMode) freeCompilerArgs += "-Xexplicit-api=strict"
-    freeCompilerArgs += "-opt-in=cafe.adriel.voyager.core.annotation.InternalVoyagerApi"
-    freeCompilerArgs += "-opt-in=cafe.adriel.voyager.core.annotation.ExperimentalVoyagerApi"
+private fun KotlinJvmCompilerOptions.configureKotlinJvmOptions(
+    enableExplicitMode: Boolean,
+    jvmVersion: String
+) {
+    jvmTarget.set(JvmTarget.fromTarget(jvmVersion))
+    if (enableExplicitMode) freeCompilerArgs.add("-Xexplicit-api=strict")
+    freeCompilerArgs.addAll(
+        listOf(
+            "-opt-in=cafe.adriel.voyager.core.annotation.InternalVoyagerApi",
+            "-opt-in=cafe.adriel.voyager.core.annotation.ExperimentalVoyagerApi"
+        )
+    )
 }
 
 private fun Project.findAndroidExtension(): BaseExtension = extensions.findByType<LibraryExtension>()
