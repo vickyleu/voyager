@@ -13,7 +13,9 @@ setupModuleForComposeMultiplatform(fullyMultiplatform = true)
 
 android {
     namespace = "cafe.adriel.voyager.core"
-
+    defaultConfig {
+        consumerProguardFiles("consumer-rules.pro")
+    }
 }
 
 kotlin {
