@@ -26,6 +26,9 @@ rxjava = "3.1.5"
 
 junit = "5.10.0"
 
+androidxKmp-bundle = "1.0.0"
+androidxKmp-lifecycle = "2.8.0"
+
 multiplatformUuid = "0.8.2"
 composePreviewRenderer = "0.0.1-alpha01"
 material3Ref = "1.3.0-beta01"
@@ -70,6 +73,11 @@ compose-materialIcons = { module = "androidx.compose.material:material-icons-cor
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
 
 rxjava = { module = "io.reactivex.rxjava3:rxjava", version.ref = "rxjava" }
+
+androidxKmp-core-bundle = { module = "org.jetbrains.androidx.core:core-bundle", version.ref = "androidxKmp-bundle" }
+androidxKmp-lifecycle-runtimeCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidxKmp-lifecycle" }
+androidxKmp-lifecycle-viewmodel = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel", version.ref = "androidxKmp-lifecycle" }
+androidxKmp-lifecycle-viewmodelCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidxKmp-lifecycle" }
 
 multiplatformUuid = { module = "com.benasher44:uuid", version.ref = "multiplatformUuid" }
 
