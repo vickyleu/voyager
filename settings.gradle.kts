@@ -33,6 +33,7 @@ include(
     ":voyager-screenmodel",
     ":voyager-navigator",
     ":voyager-tab-navigator",
+    ":voyager-lifecycle-kmp",
     ":voyager-bottom-sheet-navigator",
     ":voyager-transitions",
     ":voyager-hilt",
