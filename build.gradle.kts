@@ -190,19 +190,9 @@ allprojects {
                         }
                     }
                 }
-
-                repositories {
-                    maven {
-                        name = "GitHubPackages"
-                        url = uri("https://maven.pkg.github.com/$mavenAuthor/${projectName}")
-                        credentials {
-                            username = "$mavenAuthor"
-                            password = myExtra["githubToken"]?.toString()
-                        }
-                    }
-                }
                 val shouldRegistering = when{
                     project.extensions.findByName("javaPlatform")!=null->true
+                    project.extensions.findByType(org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension::class) != null->false
                     project.extensions.findByName("android")!=null -> {
                         true
                     }
@@ -210,10 +200,10 @@ allprojects {
                     else->false
                 }
                 if (shouldRegistering) {
-                    afterEvaluate {
+                    afterEvaluate runBlock@{
                         if(project.extensions.findByName("android")!=null){
                             if(components.findByName("release")==null){
-                               return@afterEvaluate
+                               return@runBlock
                             }
                         }
                         publications.register<MavenPublication>(

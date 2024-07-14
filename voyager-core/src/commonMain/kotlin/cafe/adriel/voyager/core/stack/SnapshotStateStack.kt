@@ -93,6 +93,7 @@ public class SnapshotStateStack<Item>(
 
     public override infix fun push(item: Item) {
         stateStack += item
+        println("push item $item  stack size ${stateStack.size}")
         lastEvent = StackEvent.Push
     }
 

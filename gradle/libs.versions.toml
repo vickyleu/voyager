@@ -1,14 +1,13 @@
 [versions]
-agp = "8.4.1"
-atomicfu = "0.24.0"
+agp = "8.5.1"
+atomicfu = "0.25.0"
 kotlin = "2.0.0"
 ktlint = "12.1.1"
-compose-plugin = "1.6.10"
-jetpack-compose-bom = "2024.05.00"
-compose-views = "1.6.0.3"
+compose-plugin = "1.7.0-alpha01"
+jetpack-compose-bom = "2024.06.00"
+compose-views = "1.0.2"
 
 binaryCompatibilityValidator = "0.13.2"
-#atomic/fu = "1.9.24"
 jvmTarget = "17"
 coroutines = "1.8.1"
 isUseForkConfig = "true"
@@ -17,33 +16,27 @@ kodein = "7.21.2"
 koin = "3.6.0-wasm-alpha2"
 hilt = "2.51.1"
 leakCanary = "2.14"
-appCompat = "1.6.1"
+appCompat = "1.7.0"
+lifecycle = "2.8.3"
 androidx-activityCompose = "1.9.0"
-composeAnimation = "1.6.7"
-composeMaterial = "1.6.7"
-lifecycle = "2.8.0"
-composeCompiler = "1.5.7"
-composeActivity = "1.7.2"
-composeRuntime = "1.5.0"
-composeUI = "1.5.0"
+composeAnimation = "1.6.8"
+composeMaterial = "1.6.8"
 rxjava = "3.1.5"
 
-junit = "5.10.0"
+junit = "5.10.1"
 
 androidxKmp-bundle = "1.0.0"
 androidxKmp-lifecycle = "2.8.0"
 
 multiplatformUuid = "0.8.2"
-composePreviewRenderer = "0.0.1-alpha01"
-material3Ref = "1.3.0-beta01"
+material3Ref = "1.3.0-beta04"
 
 
 [libraries]
-android-build = { module = "com.android.tools.build:gradle", version.ref = "agp" }
 compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "jetpack-compose-bom" }
 
-compose-views = { module = "io.github.ltttttttttttt:ComposeViews", version.ref = "compose-views" }
-
+# 通用视图
+compose-views = { module = "com.vickyleu.composeviews:composeviews", version.ref = "compose-views" }
 
 koin-bom = { module = "io.insert-koin:koin-bom", version.ref = "koin" }
 
@@ -68,11 +61,9 @@ lifecycle-viewModelKtx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx"
 lifecycle-viewModelCompose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle" }
 compose-rxjava = { module = "androidx.compose.runtime:runtime-rxjava3"}
 compose-runtime = { module = "androidx.compose.runtime:runtime"}
-compose-runtimeSaveable = { module = "androidx.compose.runtime:runtime-saveable"}
 compose-runtimeLiveData = { module = "androidx.compose.runtime:runtime-livedata"}
 compose-ui = { module = "androidx.compose.ui:ui" }
 compose-animation = { module = "androidx.compose.animation:animation",version.ref="composeAnimation" }
-compose-material = { module = "androidx.compose.material:material"}
 compose-materialIcons = { module = "androidx.compose.material:material-icons-core", version.ref = "composeMaterial" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
 
@@ -87,7 +78,6 @@ multiplatformUuid = { module = "com.benasher44:uuid", version.ref = "multiplatfo
 
 junit-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit" }
 junit-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
-compose-preview-renderer = { group = "com.android.tools.compose", name = "compose-preview-renderer", version.ref = "composePreviewRenderer" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
